@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocean Bites | Zackephron Works</title>
+    <style>
+        /* The Zen Aesthetic /
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB, #0077b6, #03045e);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        / User Interface /
+        #ui-board {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border-top: 4px solid #ffb703;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            color: #023047;
+            font-size: 26px;
+        }
+
+        .stat {
+            font-size: 20px;
+            color: #0a9396;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .studio {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        / Sparky the Mascot /
+        #sparky {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: #ffb703;
+            color: #023047;
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        / The Game Canvas */
+        canvas {
+            display: block;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-board">
+        <h1>🌊 Ocean Bites</h1>
+        <div class="stat">🪙 Gold: <span id="gold-count">0</span></div>
+        <div class="stat">🐟 Fish: <span id="fish-count">0</span></div>
+        <div class="studio">© 2026 Zackephron Works</div>
+    </div>
+
+    <div id="sparky">Sparky: "Click the ocean to fish! Relax..."</div>
+
+    <canvas id="ocean"></canvas>
+
+    <script>
+        const canvas = document.getElementById('ocean');
+        const ctx = canvas.getContext('2d');
+        const goldDisplay = document.getElementById('gold-count');
+        const fishDisplay = document.getElementById('fish-count');
+        const sparky = document.getElementById('sparky');
+
+        let gold = 0;
+        let fish = 0;
+        let ripples = [];
+
+        // Resize canvas to fill the screen
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Zen click mechanic
+        canvas.addEventListener('click', (e) => {
+            // Create a water ripple effect where clicked
+            ripples.push({ x: e.clientX, y: e.clientY, radius: 0, alpha: 1 });
+
+            // RNG Fishing Logic
+            let catchChance = Math.random();
+            
+            if (catchChance > 0.90) {
+                // 10% chance: Catch a rare Moon-Fish!
+                fish += 1;
+                gold += 50;
+                sparky.innerText = "Sparky: WOW! A rare Moon-Fish! +50 Gold!";
+                sparky.style.background = "#ffd166";
+            } else if (catchChance > 0.40) {
+                // 50% chance: Catch a normal fish
+                fish += 1;
+                gold += 10;
+                sparky.innerText = "Sparky: Nice catch! +10 Gold!";
+                sparky.style.background = "#06d6a0";
+            } else {
+                // 40% chance: Just a peaceful ripple
+                sparky.innerText = "Sparky: So peaceful... keep trying!";
+                sparky.style.background = "#ffb703";
+            }
+
+            // Update UI
+            goldDisplay.innerText = gold;
+            fishDisplay.innerText = fish;
+        });
+
+        // Animation Loop for Zen Ripples
+        function draw() {
+            // Clear frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw and fade ripples
+            for (let i = 0; i < ripples.length; i++) {
+                let r = ripples[i];
+                ctx.beginPath();
+                ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${r.alpha})`;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                r.radius += 2; // Ripple expands
+                r.alpha -= 0.02; // Ripple fades
+            }
+
+            // Remove dead ripples
+            ripples = ripples.filter(r => r.alpha > 0);
+
+            requestAnimationFrame(draw);
+        }
+
+        draw(); // Start the animation
+    </script>
+</body>
+</html>
