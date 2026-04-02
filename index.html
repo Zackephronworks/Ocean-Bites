@@ -5,148 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocean Bites | Zackephron Works</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: linear-gradient(to bottom, #87CEEB, #0077b6, #03045e);
-            font-family: 'Segoe UI', sans-serif;
-            transition: background 1s ease;
-            user-select: none;
+        :root {
+            --ocean-blue: #0077b6;
+            --sand-yellow: #f4d35e;
+            --z-gold: #ffb703;
+            --neon-blue: #00f5ff;
         }
-        body.night-mode {
-            background: linear-gradient(to bottom, #000814, #001d3d, #003566);
+
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #000; }
+
+        /* --- LOADING SCREEN (From your Image) --- */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #023047, #001d3d);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
+            transition: opacity 1s ease;
         }
-        #ui-board {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-            border-top: 4px solid #ffb703;
-            transition: all 0.5s ease;
-            z-index: 10;
+        .z-logo { font-size: 80px; font-weight: bold; color: white; text-shadow: 0 0 20px var(--neon-blue); margin-bottom: 20px; }
+        .loading-bar-container { width: 250px; height: 30px; background: rgba(255,255,255,0.1); border-radius: 15px; border: 2px solid var(--z-gold); overflow: hidden; }
+        .loading-fill { width: 65%; height: 100%; background: linear-gradient(90deg, #ffb703, #fb8500); transition: width 2s; }
+        .loading-text { color: white; margin-top: 10px; letter-spacing: 2px; font-size: 14px; }
+
+        /* --- GAME WORLD --- */
+        #game-container { display: none; width: 100%; height: 100%; background: var(--ocean-blue); position: relative; }
+        #sand-bank { position: absolute; bottom: 0; width: 100%; height: 30%; background: var(--sand-yellow); border-top: 10px solid #ee964b; }
+
+        /* --- STACKING VISUALS --- */
+        #player {
+            position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%);
+            width: 50px; height: 80px; background: #023047; border-radius: 10px; border: 3px solid white;
         }
-        body.night-mode #ui-board {
-            background: rgba(0, 8, 20, 0.9);
-            color: #00f5ff;
-            border-top: 4px solid #00f5ff;
-            box-shadow: 0 0 20px #00f5ff;
+        #fish-stack { position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column-reverse; }
+        .fish-item { 
+            width: 40px; height: 15px; background: #fb8500; margin: 2px; border-radius: 5px; 
+            border: 1px solid white; animation: wobble 2s infinite ease-in-out;
         }
-        .stat { font-size: 20px; color: #0a9396; font-weight: bold; margin-bottom: 5px; }
-        body.night-mode .stat { color: #00f5ff; }
-        button {
-            margin-top: 10px;
-            padding: 10px 15px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            background: #023047;
-            color: white;
-            transition: transform 0.1s;
+
+        /* --- UI BOARD --- */
+        #ui-top {
+            position: absolute; top: 20px; left: 20px; right: 20px;
+            display: flex; justify-content: space-between; z-index: 50;
         }
-        button:active { transform: scale(0.95); }
-        #night-btn { position: absolute; top: 20px; right: 20px; background: #ffb703; color: #023047; z-index: 10; }
-        #sparky {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            background: #ffb703;
-            color: #023047;
-            padding: 15px 25px;
-            border-radius: 30px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 10;
+        .hud-box { background: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 15px; border-bottom: 4px solid var(--z-gold); font-weight: bold; }
+
+        @keyframes wobble { 
+            0%, 100% { transform: translateX(0); } 
+            50% { transform: translateX(5px); } 
         }
-        .studio { font-size: 10px; color: #888; margin-top: 10px; text-transform: uppercase; }
-        canvas { display: block; cursor: crosshair; }
     </style>
 </head>
 <body>
 
-    <button id="night-btn" onclick="toggleNight()">🌙 Switch to Night</button>
-
-    <div id="ui-board">
-        <h1>🌊 Ocean Bites</h1>
-        <div class="stat">🪙 Gold: <span id="gold-count">0</span></div>
-        <div class="stat">🐟 Fish: <span id="fish-count">0</span></div>
-        <button onclick="buyAuto()">🛒 Buy Sparky Auto ($100)</button>
-        <div class="studio">© 2026 Zackephron Works</div>
+    <div id="loading-screen">
+        <div class="z-logo">Z</div>
+        <div style="color:white; margin-bottom:10px;">ZACKEPHRON WORKS</div>
+        <div class="loading-bar-container">
+            <div class="loading-fill"></div>
+        </div>
+        <div class="loading-text">LOADING EMPIRE... 65%</div>
     </div>
 
-    <div id="sparky">Sparky: "Click the ocean! Let's get rich!"</div>
-    <canvas id="ocean"></canvas>
+    <div id="game-container">
+        <div id="ui-top">
+            <div class="hud-box">🪙 Gold: <span id="gold-val">0</span></div>
+            <div class="hud-box">🐟 Stack: <span id="stack-val">0</span>/10</div>
+        </div>
+
+        <div id="player">
+            <div id="fish-stack"></div>
+        </div>
+        
+        <div id="sand-bank">
+            <button onclick="sellFish()" style="position:absolute; top:-50px; left:50%; transform:translateX(-50%); padding:10px 30px; background:var(--z-gold); border:none; border-radius:20px; font-weight:bold; cursor:pointer;">SELL FISH 💰</button>
+        </div>
+    </div>
 
     <script>
-        const canvas = document.getElementById('ocean');
-        const ctx = canvas.getContext('2d');
-        const goldDisplay = document.getElementById('gold-count');
-        const fishDisplay = document.getElementById('fish-count');
-        const sparky = document.getElementById('sparky');
-
         let gold = 0;
-        let fish = 0;
-        let ripples = [];
+        let stackCount = 0;
+        const stackLimit = 10;
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        function toggleNight() {
-            document.body.classList.toggle('night-mode');
-            const btn = document.getElementById('night-btn');
-            btn.innerText = document.body.classList.contains('night-mode') ? "☀️ Day Mode" : "🌙 Night Mode";
-        }
-
-        function buyAuto() {
-            if (gold >= 100) {
-                gold -= 100;
-                goldDisplay.innerText = gold;
-                sparky.innerText = "Sparky: 'I'm fishing for you now! Automation Baby!'";
-                sparky.style.background = "#00f5ff";
-                setInterval(() => {
-                    fish++;
-                    gold += 15;
-                    goldDisplay.innerText = gold;
-                    fishDisplay.innerText = fish;
-                    ripples.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, radius: 0, alpha: 1 });
-                }, 3000);
-            } else {
-                sparky.innerText = "Sparky: 'You need $100 gold, Boss!'";
-            }
-        }
-
-        canvas.addEventListener('click', (e) => {
-            ripples.push({ x: e.clientX, y: e.clientY, radius: 0, alpha: 1 });
-            fish++;
-            gold += 10;
-            goldDisplay.innerText = gold;
-            fishDisplay.innerText = fish;
-            if(gold < 100) sparky.innerText = "Sparky: 'Keep clicking! Almost at $100!'";
-        });
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < ripples.length; i++) {
-                let r = ripples[i];
-                ctx.beginPath();
-                ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
-                ctx.strokeStyle = `rgba(255, 255, 255, ${r.alpha})`;
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                r.radius += 2;
-                r.alpha -= 0.02;
-            }
-            ripples = ripples.filter(r => r.alpha > 0);
-            requestAnimationFrame(draw);
-        }
-        draw();
-    </script>
-</body>
-</html>
+        // Simulate Loading then Start
+        setTimeout(() => {
+            document.getElementById('loading-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
