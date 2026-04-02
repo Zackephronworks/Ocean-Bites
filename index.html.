@@ -11,13 +11,11 @@
             background: linear-gradient(to bottom, #87CEEB, #0077b6, #03045e);
             font-family: 'Segoe UI', sans-serif;
             transition: background 1s ease;
+            user-select: none;
         }
-
-        /* --- THE NEON NIGHT MODE --- */
         body.night-mode {
             background: linear-gradient(to bottom, #000814, #001d3d, #003566);
         }
-
         #ui-board {
             position: absolute;
             top: 20px;
@@ -28,18 +26,16 @@
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
             border-top: 4px solid #ffb703;
             transition: all 0.5s ease;
+            z-index: 10;
         }
-
         body.night-mode #ui-board {
             background: rgba(0, 8, 20, 0.9);
             color: #00f5ff;
             border-top: 4px solid #00f5ff;
             box-shadow: 0 0 20px #00f5ff;
         }
-
-        .stat { font-size: 20px; color: #0a9396; font-weight: bold; }
+        .stat { font-size: 20px; color: #0a9396; font-weight: bold; margin-bottom: 5px; }
         body.night-mode .stat { color: #00f5ff; }
-
         button {
             margin-top: 10px;
             padding: 10px 15px;
@@ -49,22 +45,24 @@
             font-weight: bold;
             background: #023047;
             color: white;
+            transition: transform 0.1s;
         }
-
-        #night-btn { position: absolute; top: 20px; right: 20px; background: #ffb703; color: #023047; }
-
+        button:active { transform: scale(0.95); }
+        #night-btn { position: absolute; top: 20px; right: 20px; background: #ffb703; color: #023047; z-index: 10; }
         #sparky {
             position: absolute;
             bottom: 30px;
             right: 30px;
             background: #ffb703;
             color: #023047;
-            padding: 15px;
+            padding: 15px 25px;
             border-radius: 30px;
             font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 10;
         }
-
-        canvas { display: block; }
+        .studio { font-size: 10px; color: #888; margin-top: 10px; text-transform: uppercase; }
+        canvas { display: block; cursor: crosshair; }
     </style>
 </head>
 <body>
@@ -92,7 +90,6 @@
         let gold = 0;
         let fish = 0;
         let ripples = [];
-        let autoCount = 0;
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -101,20 +98,18 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // 🌙 TOGGLE NIGHT MODE
         function toggleNight() {
             document.body.classList.toggle('night-mode');
             const btn = document.getElementById('night-btn');
             btn.innerText = document.body.classList.contains('night-mode') ? "☀️ Day Mode" : "🌙 Night Mode";
         }
 
-        // 🛒 BUY UPGRADE
         function buyAuto() {
             if (gold >= 100) {
                 gold -= 100;
-                autoCount++;
                 goldDisplay.innerText = gold;
                 sparky.innerText = "Sparky: 'I'm fishing for you now! Automation Baby!'";
+                sparky.style.background = "#00f5ff";
                 setInterval(() => {
                     fish++;
                     gold += 15;
@@ -133,6 +128,7 @@
             gold += 10;
             goldDisplay.innerText = gold;
             fishDisplay.innerText = fish;
+            if(gold < 100) sparky.innerText = "Sparky: 'Keep clicking! Almost at $100!'";
         });
 
         function draw() {
