@@ -5,88 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocean Bites | Zackephron Works</title>
     <style>
-        :root {
-            --ocean-blue: #0077b6;
-            --sand-yellow: #f4d35e;
-            --z-gold: #ffb703;
-            --neon-blue: #00f5ff;
-        }
-
+        :root { --ocean: #0077b6; --sand: #f4d35e; --z-gold: #ffb703; --neon: #00f5ff; }
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #000; }
 
-        /* --- LOADING SCREEN (From your Image) --- */
+        /* --- 1. THE PRO LOADING SCREEN --- */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, #023047, #001d3d);
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
-            transition: opacity 1s ease;
         }
-        .z-logo { font-size: 80px; font-weight: bold; color: white; text-shadow: 0 0 20px var(--neon-blue); margin-bottom: 20px; }
-        .loading-bar-container { width: 250px; height: 30px; background: rgba(255,255,255,0.1); border-radius: 15px; border: 2px solid var(--z-gold); overflow: hidden; }
-        .loading-fill { width: 65%; height: 100%; background: linear-gradient(90deg, #ffb703, #fb8500); transition: width 2s; }
-        .loading-text { color: white; margin-top: 10px; letter-spacing: 2px; font-size: 14px; }
+        .z-logo { font-size: 80px; font-weight: bold; color: white; text-shadow: 0 0 20px var(--neon); margin-bottom: 10px; }
+        .loading-bar-container { width: 250px; height: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; border: 2px solid var(--z-gold); overflow: hidden; }
+        .loading-fill { width: 0%; height: 100%; background: var(--z-gold); transition: width 3s ease-in-out; }
+        .loading-text { color: white; margin-top: 15px; font-size: 14px; letter-spacing: 2px; }
 
-        /* --- GAME WORLD --- */
-        #game-container { display: none; width: 100%; height: 100%; background: var(--ocean-blue); position: relative; }
-        #sand-bank { position: absolute; bottom: 0; width: 100%; height: 30%; background: var(--sand-yellow); border-top: 10px solid #ee964b; }
+        /* --- 2. THE GAME WORLD --- */
+        #game-container { visibility: hidden; width: 100%; height: 100%; background: var(--ocean); position: relative; }
+        #sand-bank { position: absolute; bottom: 0; width: 100%; height: 35%; background: var(--sand); border-top: 8px solid #ee964b; }
 
-        /* --- STACKING VISUALS --- */
+        /* --- 3. THE STACKING SYSTEM --- */
         #player {
-            position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%);
-            width: 50px; height: 80px; background: #023047; border-radius: 10px; border: 3px solid white;
+            position: absolute; bottom: 30%; left: 50%; transform: translateX(-50%);
+            width: 45px; height: 75px; background: #023047; border: 3px solid white; border-radius: 8px;
         }
-        #fish-stack { position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column-reverse; }
-        .fish-item { 
-            width: 40px; height: 15px; background: #fb8500; margin: 2px; border-radius: 5px; 
-            border: 1px solid white; animation: wobble 2s infinite ease-in-out;
-        }
+        #fish-stack { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column-reverse; }
+        .fish-box { width: 35px; height: 12px; background: #fb8500; margin: 1px; border-radius: 4px; border: 1px solid white; }
 
-        /* --- UI BOARD --- */
-        #ui-top {
-            position: absolute; top: 20px; left: 20px; right: 20px;
-            display: flex; justify-content: space-between; z-index: 50;
-        }
-        .hud-box { background: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 15px; border-bottom: 4px solid var(--z-gold); font-weight: bold; }
-
-        @keyframes wobble { 
-            0%, 100% { transform: translateX(0); } 
-            50% { transform: translateX(5px); } 
-        }
+        /* --- 4. THE HUD --- */
+        #hud { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; z-index: 50; }
+        .hud-item { background: white; padding: 10px 20px; border-radius: 12px; border-bottom: 4px solid var(--z-gold); font-weight: bold; }
+        button { padding: 12px 30px; background: #fb8500; color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; border-bottom: 4px solid #b56100; }
     </style>
 </head>
 <body>
 
     <div id="loading-screen">
         <div class="z-logo">Z</div>
-        <div style="color:white; margin-bottom:10px;">ZACKEPHRON WORKS</div>
-        <div class="loading-bar-container">
-            <div class="loading-fill"></div>
-        </div>
-        <div class="loading-text">LOADING EMPIRE... 65%</div>
+        <div style="color:white; font-weight:bold; margin-bottom:20px;">ZACKEPHRON WORKS</div>
+        <div class="loading-bar-container"><div class="loading-fill" id="fill"></div></div>
+        <div class="loading-text">LOADING EMPIRE... <span id="percent">0</span>%</div>
     </div>
 
     <div id="game-container">
-        <div id="ui-top">
-            <div class="hud-box">🪙 Gold: <span id="gold-val">0</span></div>
-            <div class="hud-box">🐟 Stack: <span id="stack-val">0</span>/10</div>
+        <div id="hud">
+            <div class="hud-item">🪙 Gold: <span id="gold">0</span></div>
+            <div class="hud-item">🐟 Stack: <span id="stack">0</span>/10</div>
         </div>
 
-        <div id="player">
-            <div id="fish-stack"></div>
-        </div>
-        
+        <div id="player"><div id="fish-stack"></div></div>
         <div id="sand-bank">
-            <button onclick="sellFish()" style="position:absolute; top:-50px; left:50%; transform:translateX(-50%); padding:10px 30px; background:var(--z-gold); border:none; border-radius:20px; font-weight:bold; cursor:pointer;">SELL FISH 💰</button>
+            <div style="text-align:center; margin-top: 40px;">
+                <button onclick="sell()">💰 SELL STACK 💰</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let gold = 0;
-        let stackCount = 0;
-        const stackLimit = 10;
+        let gold = 0, stack = 0;
 
-        // Simulate Loading then Start
-        setTimeout(() => {
-            document.getElementById('loading-screen').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('loading-screen').style.display = 'none';
+        // 🚀 STARTUP LOADING LOGIC
+        window.onload = () => {
+            const fill = document.getElementById('fill');
+            const perc = document.getElementById('percent');
+            fill.style.width = "100%";
+            let count = 0;
+            let interval = setInterval(() => {
+                count += 2;
+                perc.innerText = count;
+                if(count >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('loading-screen').style.display = 'none';
+                        document.getElementById('game-container').style.visibility = 'visible';
+                    }, 500);
+                }
+            }, 40);
+        };
+
+        // 🎣 FISHING LOGIC
+        document.getElementById('game-container').onclick = (e) => {
+            if(e.target.id === "game-container" && stack < 10) {
+                stack++;
+                document.getElementById('stack').innerText = stack;
+                const f = document.createElement('div');
+                f.className = 'fish-box';
+                document.getElementById('fish-stack').appendChild(f);
+            }
+        };
+
+        function sell() {
+            if(stack > 0) {
+                gold += (stack * 25);
+                stack = 0;
+                document.getElementById('gold').innerText = gold;
+                document.getElementById('stack').innerText = stack;
+                document.getElementById('fish-stack').innerHTML = '';
+            }
+        }
+    </script>
+</body>
+</html>
